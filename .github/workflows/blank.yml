@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mortgage Loan Calculator</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f7fa;
+      margin: 0;
+      padding: 0;
+    }
+    .banner img {
+      width: 100%;
+      max-height: 180px;
+      object-fit: cover;
+    }
+    .container {
+      max-width: 600px;
+      background-color: #fff;
+      margin: 20px auto;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #333;
+    }
+    .tabs {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .tabs button {
+      flex: 1;
+      padding: 10px;
+      background-color: #e0e0e0;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      color: #333;
+      min-width: 100px;
+    }
+    .tabs button.active {
+      background-color: #007bff;
+      color: #fff;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+      font-size: 0.95rem;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+    input[type="checkbox"] {
+      width: auto;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    .calculate-btn {
+      background-color: #28a745;
+      color: #fff;
+      border: none;
+      padding: 12px 20px;
+      width: 100%;
+      font-size: 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    .calculate-btn:hover {
+      background-color: #218838;
+    }
+    .chart-container {
+      margin-top: 20px;
+      max-width: 100%;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #ccc;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    @media (max-width: 767px) {
+      .container {
+        margin: 10px;
+        padding: 15px;
+      }
+      .banner img {
+        max-height: 120px;
+      }
+      .tabs {
+        flex-direction: column;
+      }
+      .tabs button {
+        width: 100%;
+        margin-bottom: 5px;
+      }
+      th, td {
+        font-size: 0.8rem;
+        padding: 8px;
+      }
+      .chart-container {
+        max-width: 90%;
+      }
+    }
+    @media (min-width: 768px) and (max-width: 1023px) {
+      .container {
+        max-width: 90%;
+      }
+      .banner img {
+        max-height: 150px;
+      }
+      .tabs button {
+        min-width: 120px;
+      }
+      th, td {
+        font-size: 0.85rem;
+      }
+      .chart-container {
+        max-width: 80%;
+      }
+    }
+    @media (min-width: 1024px) {
+      .container {
+        max-width: 600px;
+      }
+      .chart-container {
+        max-width: 400px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="banner">
+    <img src="placeholder-bank-banner-soft-watercolor.jpg" alt="Bank Banner">
+  </div>
+
+  <div class="container">
+    <h1>Mortgage Loan Calculator</h1>
+
+    <div class="tabs">
+      <button class="active" onclick="switchTab(event, 'inputs')">Inputs</button>
+      <button onclick="switchTab(event, 'eligibility')">Loan Eligibility</button>
+      <button onclick="switchTab(event, 'tenure')">Tenure & Interest</button>
+    </div>
+
+    <div id="inputs" class="tab-content active">
+      <div class="form-group">
+        <label for="purchasePrice">Purchase Price (JMD)</label>
+        <input type="number" id="purchasePrice" value="40000000">
+      </div>
+      <div class="form-group">
+        <label for="marketValue">Market Value (JMD)</label>
+        <input type="number" id="marketValue" value="42000000">
+      </div>
+      <div class="form-group">
+        <label for="nhtApplicants">NHT Applicants</label>
+        <input type="number" id="nhtApplicants" value="1" min="1" max="3">
+      </div>
+      <div class="form-group">
+        <label><input type="checkbox" id="nhtBenefit" checked> Apply NHT Benefit</label>
+      </div>
+      <div class="form-group">
+        <label for="nhtRate">NHT Rate (%)</label>
+        <input type="number" id="nhtRate" value="3" min="0" max="100">
+      </div>
+      <div class="form-group">
+        <label><input type="checkbox" id="gkHoapBenefit" checked> Apply GK HOAP Benefit</label>
+      </div>
+      <div class="form-group">
+        <label for="gkEmployee">GK Employee Status</label>
+        <select id="gkEmployee">
+          <option>No</option>
+          <option>Yes</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="gkEmpType">GK Employee Type</label>
+        <select id="gkEmpType">
+          <option>Permanent</option>
+          <option>Continuous Contract</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="gkContract">GK Contract Years</label>
+        <select id="gkContract">
+          <option>Between 2 to 5 (I including 2)</option>
+          <option>More than or equal to 5</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="currentAge">Current Age</label>
+        <input type="number" id="currentAge" value="40" min="18" max="65">
+      </div>
+      <button class="calculate-btn" onclick="calculateLoan()">Calculate</button>
+    </div>
+
+    <div id="eligibility" class="tab-content">
+      <p><strong>Loan Eligibility Breakdown</strong></p>
+      <table id="eligibilityTable"></table>
+      <div class="chart-container">
+        <canvas id="loanChart"></canvas>
+      </div>
+    </div>
+
+    <div id="tenure" class="tab-content">
+      <p><strong>Monthly Payment Breakdown</strong></p>
+      <table id="paymentTable"></table>
+      <div class="chart-container">
+        <canvas id="paymentChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let loanChart, paymentChart;
+
+    function switchTab(evt, tabId) {
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.tabs button').forEach(btn => btn.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      evt.target.classList.add('active');
+    }
+
+    function pmt(rate, nper, pv) {
+      return rate === 0 ? pv / nper : (pv * rate) / (1 - Math.pow(1 + rate, -nper));
+    }
+
+    function formatCurrency(value) {
+      return value.toLocaleString('en-JM', { style: 'currency', currency: 'JMD' });
+    }
+
+    function calculateLoan() {
+      const purchasePrice = parseFloat(document.getElementById('purchasePrice').value);
+      const marketValue = parseFloat(document.getElementById('marketValue').value);
+      const nhtApplicants = parseInt(document.getElementById('nhtApplicants').value);
+      const nhtBenefit = document.getElementById('nhtBenefit').checked;
+      const gkEmployee = document.getElementById('gkEmployee').value === 'Yes';
+      const gkHoapBenefit = document.getElementById('gkHoapBenefit').checked;
+      const gkEmpType = document.getElementById('gkEmpType').value;
+      const gkContract = document.getElementById('gkContract').value;
+      const currentAge = parseInt(document.getElementById('currentAge').value);
+      const nhtRate = parseFloat(document.getElementById('nhtRate').value) / 100;
+
+      const ltvBase = Math.min(purchasePrice, marketValue);
+      const loanNeeded = purchasePrice;
+
+      let nhtPortion = 0;
+      if (nhtBenefit) {
+        if (nhtApplicants === 1) nhtPortion = ltvBase < 14000000 ? 8500000 : 9000000;
+        else if (nhtApplicants === 2) nhtPortion = 17000000;
+        else if (nhtApplicants === 3) nhtPortion = 23000000;
+        nhtPortion *= 0.95;
+      }
+
+      let gkHoapMaxElig = 0;
+      if (gkHoapBenefit && gkEmployee) {
+        gkHoapMaxElig = gkEmpType === 'Permanent'
+          ? 15000000
+          : gkContract.includes('5') ? 15000000 : 7500000;
+      }
+
+      const gkHoapPortion = Math.max(0, Math.min(gkHoapMaxElig, loanNeeded - nhtPortion) * 0.95);
+      const fgbLoan = Math.max(0, (loanNeeded - nhtPortion - gkHoapPortion) * 0.9);
+      const totalLTV = nhtPortion + gkHoapPortion + fgbLoan;
+      const downAmt = loanNeeded - totalLTV;
+      const ltvPercent = ltvBase > 0 ? (((totalLTV / ltvBase) * 100) * 0.9).toFixed(2) : 0;
+      const downPcnt = (100 - ltvPercent).toFixed(2);
+
+      const nhtTenure = Math.max(65 - currentAge, 1);
+      const gkTenure = Math.max(60 - currentAge, 1);
+      const fgbTenure = Math.max(65 - currentAge, 1);
+      const nhtPay = pmt(nhtRate / 12, nhtTenure * 12, nhtPortion + (32500 * nhtApplicants));
+      const gkPay = pmt(0.06 / 12, gkTenure * 12, gkHoapPortion);
+      const fgbPay = pmt(0.095 / 12, fgbTenure * 12, fgbLoan);
+
+      document.getElementById('eligibilityTable').innerHTML = `
+        <tr><th>Component</th><th>Amount (JMD)</th></tr>
+        <tr><td>NHT Portion</td><td>${formatCurrency(nhtPortion)}</td></tr>
+        <tr><td>GK HOAP Portion</td><td>${formatCurrency(gkHoapPortion)}</td></tr>
+        <tr><td>FGB Loan</td><td>${formatCurrency(fgbLoan)}</td></tr>
+        <tr><td>Total LTV Amount</td><td>${formatCurrency(totalLTV)}</td></tr>
+        <tr><td>Down Payment</td><td>${formatCurrency(downAmt)}</td></tr>
+        <tr><td>LTV(%)</td><td>${ltvPercent}%</td></tr>
+        <tr><td>Down Payment (%)</td><td>${downPcnt}%</td></tr>`;
+
+      document.getElementById('paymentTable').innerHTML = `
+        <tr><th>Product</th><th>Tenure (Years)</th><th>Interest (%)</th><th>Monthly Payment (JMD)</th></tr>
+        <tr><td>NHT</td><td>${nhtTenure}</td><td>${(nhtRate * 100).toFixed(2)}</td><td>${formatCurrency(nhtPay)}</td></tr>
+        <tr><td>GK HOAP</td><td>${gkTenure}</td><td>6.00</td><td>${formatCurrency(gkPay)}</td></tr>
+        <tr><td>FGB</td><td>${fgbTenure}</td><td>9.50</td><td>${formatCurrency(fgbPay)}</td></tr>
+        <tr><th>Total</th><td></td><td></td><th>${formatCurrency(nhtPay + gkPay + fgbPay)}</th></tr>`;
+
+      if (loanChart && typeof loanChart.destroy === 'function') loanChart.destroy();
+      loanChart = new Chart(document.getElementById('loanChart'), {
+        type: 'pie',
+        data: {
+          labels: ['NHT Portion', 'GK HOAP Portion', 'FGB Loan', 'Down Payment'],
+          datasets: [{
+            data: [nhtPortion, gkHoapPortion, fgbLoan, downAmt],
+            backgroundColor: ['#36A2EB', '#FF6384', '#FFCE56', '#4BC0C0']
+          }]
+        },
+        options: { plugins: { title: { display: true, text: 'Loan Breakdown' } } }
+      });
+
+      if (paymentChart && typeof paymentChart.destroy === 'function') paymentChart.destroy();
+      paymentChart = new Chart(document.getElementById('paymentChart'), {
+        type: 'pie',
+        data: {
+          labels: ['NHT Payment', 'GK HOAP Payment', 'FGB Payment'],
+          datasets: [{
+            data: [nhtPay, gkPay, fgbPay],
+            backgroundColor: ['#66BB6A', '#AB47BC', '#FFCA28']
+          }]
+        },
+        options: { plugins: { title: { display: true, text: 'Monthly Payment Breakdown' } } }
+      });
+
+      switchTab({ target: document.querySelector('.tabs button:nth-child(2)') }, 'eligibility');
+    }
+  </script>
+</body>
+</html>
+# Simple workflow for deploying static content to GitHub Pages
+name: Deploy static content to Pages
+
+on:
+  # Runs on pushes targeting the default branch
+  push:
+    branches: ["main"]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  # Single deploy job since we're just deploying
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # Upload entire repository
+          path: '.'
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
